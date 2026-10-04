@@ -143,26 +143,34 @@
                         <div class="version">Versión ${app.version_name}</div>
                         <p>${app.descripcion}</p>
                         <div class="btn-container">
-                            <a href="${app.url_apk}" class="btn btn-instalar" data-package="${app.package_name}">${textoBoton}</a>
-                            <a href="intent://#Intent;action=android.settings.APPLICATION_DETAILS_SETTINGS;scheme=package;package=${app.package_name};end;" class="btn btn-ajustes">Configurar / Info</a>
+                            <a href="${app.url_apk}" class="btn btn-instalar" data-package="${app.package_name}" data-tipo="${app.tipo || 'apk'}">${textoBoton}</a>
+                            <a href="intent://details?id=${app.package_name}#Intent;package=com.android.settings;end;" class="btn btn-ajustes">Configurar / Info</a>
                         </div>
                     `;
                     container.appendChild(card);
-                });
-
-                // Lógica para cambiar el botón a "Actualizar" cuando el usuario hace clic en instalar
-                document.querySelectorAll('.btn-instalar').forEach(btn => {
-                    btn.addEventListener('click', (e) => {
-                        const pkg = e.target.getAttribute('data-package');
-                        localStorage.setItem(`app_installed_${pkg}`, 'true');
-                        e.target.textContent = 'Actualizar';
-                    });
                 });
             })
             .catch(error => {
                 console.error('Error cargando el catálogo:', error);
                 document.getElementById('app-list').innerHTML = '<p style="color:red;">Error al cargar las aplicaciones. Revisa tu apps.json.</p>';
             });
+
+        // Delegación de eventos global para manejar clics en botones generados dinámicamente
+        document.addEventListener('click', (e) => {
+            if (e.target.classList.contains('btn-instalar')) {
+                const tipo = e.target.getAttribute('data-tipo');
+                const pkg = e.target.getAttribute('data-package');
+
+                if (tipo === 'bundle') {
+                    e.preventDefault();
+                    alert("Aviso: Este archivo (.apkm) requiere un instalador de paquetes divididos compatible en tu TV Box.");
+                    window.location.href = e.target.href;
+                } else {
+                    localStorage.setItem(`app_installed_${pkg}`, 'true');
+                    e.target.textContent = 'Actualizar';
+                }
+            }
+        });
     </script>
 </body>
 </html>
